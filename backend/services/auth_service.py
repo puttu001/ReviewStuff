@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -19,13 +20,26 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
+# google-auth defaults to zero tolerance, so a machine even 2 seconds behind
+# Google rejects freshly-issued tokens as "used too early".
+GOOGLE_CLOCK_SKEW_SECONDS = 10
+
 bearer_scheme = HTTPBearer()
+logger = logging.getLogger(__name__)
 
 
 def verify_google_token(token: str) -> dict:
     try:
-        return id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
-    except ValueError:
+        return id_token.verify_oauth2_token(
+            token,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID,
+            clock_skew_in_seconds=GOOGLE_CLOCK_SKEW_SECONDS,
+        )
+    except ValueError as exc:
+        # The response stays generic, but the real reason goes to the server log —
+        # "expired", "wrong audience" and "bad signature" need different fixes.
+        logger.warning("Google token rejected: %s", exc)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
 
 

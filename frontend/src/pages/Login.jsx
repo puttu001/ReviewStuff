@@ -5,7 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 import { api } from '../api/client';
 import { takePendingShare } from '../utils/pendingShare';
+import {
+  enqueueSave,
+  isBackgroundSyncSupported,
+  requestSaveSync,
+} from '../utils/syncQueue';
 import './Login.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -22,13 +29,20 @@ export default function Login() {
       try {
         await signIn(idToken);
 
-        // Replay a share that arrived before the user was signed in.
+        // Replay a share that arrived before the user was signed in. Route it
+        // through the durable queue so a failure here retries instead of
+        // silently dropping the link.
         const pending = takePendingShare();
         if (pending) {
           try {
-            await api.save(pending);
+            if (isBackgroundSyncSupported()) {
+              await enqueueSave(pending, API_URL);
+              await requestSaveSync();
+            } else {
+              await api.save(pending);
+            }
           } catch {
-            // Losing the replay is bad but shouldn't block sign-in.
+            // Never block sign-in on the replay.
           }
         }
 
@@ -53,7 +67,7 @@ export default function Login() {
       <div className="spacer" />
 
       <div className="login__brand">
-        <h1 className="login__title">ReviewStuff</h1>
+        <h1 className="login__title">ReviewStuff .</h1>
         <p className="text-secondary">Actually revisit what you save.</p>
       </div>
 

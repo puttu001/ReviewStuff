@@ -1,10 +1,17 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, clearToken, getToken, setToken } from '../api/client';
+import { setStoredToken } from '../utils/syncQueue';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [token, setTokenState] = useState(() => getToken());
+
+  // The service worker cannot read localStorage, so mirror the token into
+  // IndexedDB for the background save queue.
+  useEffect(() => {
+    setStoredToken(token).catch(() => {});
+  }, [token]);
 
   const signIn = useCallback(async (googleIdToken) => {
     const { access_token } = await api.googleAuth(googleIdToken);

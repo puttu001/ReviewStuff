@@ -4,10 +4,19 @@ import { CheckIcon, LockIcon, SpinnerIcon } from '../components/Icons';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { PENDING_SHARE_KEY } from '../utils/pendingShare';
+import {
+  enqueueSave,
+  isBackgroundSyncSupported,
+  requestSaveSync,
+} from '../utils/syncQueue';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 /**
- * Receives an OS share (Web Share Target, GET form) and saves it immediately.
- * No confirmation step by design — share, save, done.
+ * Receives an OS share (Web Share Target, GET form) and saves it.
+ *
+ * The save is handed to a background queue rather than awaited, so the screen
+ * confirms instantly even when the backend is cold or the network is down.
  */
 export default function ShareTarget() {
   const [params] = useSearchParams();
@@ -16,36 +25,50 @@ export default function ShareTarget() {
   const [status, setStatus] = useState('saving');
   const ran = useRef(false);
 
-  const shared = {
-    url: params.get('url') || undefined,
-    text: params.get('text') || undefined,
-    title: params.get('title') || undefined,
-  };
-
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
+
+    const shared = {
+      url: params.get('url') || undefined,
+      text: params.get('text') || undefined,
+      title: params.get('title') || undefined,
+    };
 
     if (!shared.url && !shared.text) {
       setStatus('empty');
       return;
     }
 
-    // A share that arrives while signed out must not be lost — stash it and
-    // replay after sign-in.
+    // A share that arrives while signed out must not be lost.
     if (!isAuthenticated) {
       sessionStorage.setItem(PENDING_SHARE_KEY, JSON.stringify(shared));
       setStatus('needs-auth');
       return;
     }
 
-    api
-      .save(shared)
-      .then(() => {
+    (async () => {
+      if (isBackgroundSyncSupported()) {
+        try {
+          await enqueueSave(shared, API_URL);
+          await requestSaveSync();
+          setStatus('queued');
+          setTimeout(() => navigate('/', { replace: true }), 1200);
+          return;
+        } catch {
+          // Fall through to a direct save.
+        }
+      }
+
+      // No Background Sync (e.g. iOS Safari): save directly and wait.
+      try {
+        await api.save(shared);
         setStatus('saved');
         setTimeout(() => navigate('/', { replace: true }), 1200);
-      })
-      .catch(() => setStatus('error'));
+      } catch {
+        setStatus('error');
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -59,7 +82,7 @@ export default function ShareTarget() {
           </>
         )}
 
-        {status === 'saved' && (
+        {(status === 'saved' || status === 'queued') && (
           <>
             <div className="icon-circle share__ok">
               <CheckIcon width={28} height={28} />
