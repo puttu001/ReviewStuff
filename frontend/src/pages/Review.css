@@ -1,0 +1,64 @@
+.review {
+  gap: 16px;
+}
+
+.review__progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.review__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.review__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.review__dot--on {
+  background: var(--accent);
+}
+
+.review__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 20px;
+}
+
+.review__title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 4px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.review__host {
+  margin: 0;
+}
+
+.review__card .btn {
+  margin-top: 16px;
+}
+
+.review__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.review__done {
+  background: var(--success-soft);
+  color: var(--success);
+}

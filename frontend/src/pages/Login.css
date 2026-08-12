@@ -1,0 +1,44 @@
+.login {
+  align-items: center;
+  text-align: center;
+}
+
+.login__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login__title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.login__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.login__gbtn {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+}
+
+.login__note {
+  margin: 20px 0 0;
+  font-size: 14px;
+  max-width: 260px;
+}

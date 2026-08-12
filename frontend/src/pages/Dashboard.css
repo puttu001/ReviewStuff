@@ -1,0 +1,48 @@
+.dash__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 36px 20px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+
+.dash__count {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.dash__label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.dash__total {
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+.dash__icon--success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.dash__icon--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dash__cta {
+  margin-top: 20px;
+  max-width: 260px;
+}
+
+.dash__skeleton {
+  height: 160px;
+  border-radius: var(--radius);
+  background: var(--border);
+  opacity: 0.5;
+}
