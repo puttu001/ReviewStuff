@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from api.models import AuthResponse, GoogleAuthRequest, SaveItemRequest, SavedItemResponse
+from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse
 from database.client import get_db
 from database.models import User
 from services.auth_service import create_access_token, get_current_user, get_or_create_user, verify_google_token
 from services.items_service import list_items
+from services.review_service import apply_review_action, get_review_items
 from services.save_service import extract_content, save_item
 
 router = APIRouter()
@@ -37,3 +38,19 @@ def get_items(
     current_user: User = Depends(get_current_user),
 ):
     return list_items(db, user_id=current_user.id, topic=topic)
+
+@router.get('/review-today', response_model=list[SavedItemResponse])
+def review_today(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_review_items(db, user_id=current_user.id)
+
+@router.post('/review/{item_id}', response_model=SavedItemResponse)
+def review_item(
+    item_id: int,
+    payload: ReviewActionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return apply_review_action(db, user_id=current_user.id, item_id=item_id, action=payload.action)

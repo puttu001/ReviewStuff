@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -29,3 +30,7 @@ class SavedItemResponse(BaseModel):
     created_at: datetime
     last_reviewed: datetime | None
     next_review_date: datetime
+
+
+class ReviewActionRequest(BaseModel):
+    action: Literal["reviewed", "skipped"]
