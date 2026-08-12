@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse
+from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse, UpdateItemRequest
 from database.client import get_db
 from database.models import User
 from services.auth_service import create_access_token, get_current_user, get_or_create_user, verify_google_token
-from services.items_service import list_items
+from services.items_service import UNSET, list_items, update_item
 from services.review_service import apply_review_action, get_review_items
 from services.save_service import extract_content, save_item
 
@@ -38,6 +38,16 @@ def get_items(
     current_user: User = Depends(get_current_user),
 ):
     return list_items(db, user_id=current_user.id, topic=topic)
+
+@router.patch('/items/{item_id}', response_model=SavedItemResponse)
+def patch_item(
+    item_id: int,
+    payload: UpdateItemRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    topic = payload.topic if 'topic' in payload.model_fields_set else UNSET
+    return update_item(db, user_id=current_user.id, item_id=item_id, topic=topic)
 
 @router.get('/review-today', response_model=list[SavedItemResponse])
 def review_today(

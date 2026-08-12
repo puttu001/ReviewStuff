@@ -34,3 +34,7 @@ class SavedItemResponse(BaseModel):
 
 class ReviewActionRequest(BaseModel):
     action: Literal["reviewed", "skipped"]
+
+
+class UpdateItemRequest(BaseModel):
+    topic: str | None = None
