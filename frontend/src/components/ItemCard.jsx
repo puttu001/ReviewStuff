@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import RemoteImage from './RemoteImage';
 import TopicInput from './TopicInput';
 import { api } from '../api/client';
-import { displayTitle, hostname, relativeTime } from '../utils/format';
+import { displayTitle, hostname, relativeTime, siteLabel } from '../utils/format';
 
 export default function ItemCard({ item, topics, onTopicChange }) {
   const [editing, setEditing] = useState(false);
@@ -9,6 +10,7 @@ export default function ItemCard({ item, topics, onTopicChange }) {
   const [busy, setBusy] = useState(false);
 
   const host = hostname(item.content);
+  const source = siteLabel(item);
 
   async function commit() {
     const next = draft.trim() || null;
@@ -38,13 +40,24 @@ export default function ItemCard({ item, topics, onTopicChange }) {
           target="_blank"
           rel="noreferrer"
         >
-          <h2 className="item-card__title">{displayTitle(item)}</h2>
-          <p className="item-card__host meta">{host}</p>
+          <RemoteImage className="item-card__thumb" src={item.fetched_image} />
+          <div className="item-card__text">
+            <h2 className="item-card__title">{displayTitle(item)}</h2>
+            <p className="item-card__host meta">
+              <RemoteImage
+                className="item-card__favicon"
+                src={item.fetched_favicon}
+              />
+              {source}
+            </p>
+          </div>
         </a>
       ) : (
         <div className="item-card__link">
-          <h2 className="item-card__title">{displayTitle(item)}</h2>
-          <p className="item-card__host meta">Note</p>
+          <div className="item-card__text">
+            <h2 className="item-card__title">{displayTitle(item)}</h2>
+            <p className="item-card__host meta">Note</p>
+          </div>
         </div>
       )}
 

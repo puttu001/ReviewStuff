@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse, UpdateItemRequest
@@ -6,6 +6,7 @@ from database.client import get_db
 from database.models import User
 from services.auth_service import create_access_token, get_current_user, get_or_create_user, verify_google_token
 from services.items_service import UNSET, list_items, update_item
+from services.metadata_service import enrich_item, needs_metadata
 from services.review_service import apply_review_action, get_review_items
 from services.save_service import extract_content, save_item
 
@@ -25,11 +26,19 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
 @router.post('/save', response_model=SavedItemResponse)
 def save_link(
     payload: SaveItemRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     content = extract_content(payload.url, payload.text)
-    return save_item(db, user_id=current_user.id, content=content, title=payload.title, topic=payload.topic)
+    item = save_item(db, user_id=current_user.id, content=content, title=payload.title, topic=payload.topic)
+
+    # Link preview is fetched after the response is sent — the save must never
+    # wait on a third-party site.
+    if needs_metadata(item):
+        background_tasks.add_task(enrich_item, item.id, item.content)
+
+    return item
 
 @router.get('/items', response_model=list[SavedItemResponse])
 def get_items(

@@ -10,9 +10,17 @@ export function hostname(content) {
   }
 }
 
-/** Title to display: explicit title, else the URL/note text itself. */
+/**
+ * Title to display: the title the user/sharing app gave us, else whatever the
+ * server fetched from the page, else the URL/note text itself.
+ */
 export function displayTitle(item) {
-  return item.title?.trim() || item.content;
+  return item.title?.trim() || item.fetched_title?.trim() || item.content;
+}
+
+/** Source label: the site's own name when we have it, else the hostname. */
+export function siteLabel(item) {
+  return item.fetched_site_name?.trim() || hostname(item.content);
 }
 
 export function relativeTime(isoString) {

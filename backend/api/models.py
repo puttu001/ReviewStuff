@@ -27,6 +27,10 @@ class SavedItemResponse(BaseModel):
     content: str
     title: str | None
     topic: str | None
+    fetched_title: str | None
+    fetched_image: str | None
+    fetched_site_name: str | None
+    fetched_favicon: str | None
     created_at: datetime
     last_reviewed: datetime | None
     next_review_date: datetime

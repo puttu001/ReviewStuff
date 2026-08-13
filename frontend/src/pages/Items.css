@@ -46,8 +46,35 @@
 }
 
 .item-card__link {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   text-decoration: none;
   color: inherit;
+}
+
+.item-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fixed box so a row of cards stays aligned whatever the image's aspect ratio */
+.item-card__thumb {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--border);
+}
+
+.item-card__favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  object-fit: contain;
+  vertical-align: -2px;
+  margin-right: 6px;
 }
 
 .item-card__title {

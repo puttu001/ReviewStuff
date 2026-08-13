@@ -36,6 +36,13 @@ class SavedItem(Base):
     title: Mapped[str | None]
     topic: Mapped[str | None]
 
+    # Open Graph data fetched from the URL itself. Kept separate from `title`
+    # so enrichment can never overwrite what the sharing app or the user gave us.
+    fetched_title: Mapped[str | None]
+    fetched_image: Mapped[str | None]
+    fetched_site_name: Mapped[str | None]
+    fetched_favicon: Mapped[str | None]
+
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     last_reviewed: Mapped[datetime | None] = mapped_column(DateTime)
     next_review_date: Mapped[datetime] = mapped_column(DateTime)
