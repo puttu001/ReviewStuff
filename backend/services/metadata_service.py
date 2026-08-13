@@ -85,7 +85,18 @@ def fetch_metadata(url: str) -> dict[str, str] | None:
         return None
 
     final_url, html = fetched
-    return _parse_metadata(html, final_url)
+    metadata = _parse_metadata(html, final_url)
+    if metadata is None:
+        # Distinguishes "could not fetch" from "fetched a page that had nothing
+        # useful in it" — a login wall served in place of the real page lands
+        # here, not in _fetch_html.
+        logger.warning(
+            "Metadata fetch got a page with no usable tags: %s (final_url=%s, bytes=%d)",
+            url,
+            final_url,
+            len(html),
+        )
+    return metadata
 
 
 def _store(item_id: int, url: str, metadata: dict[str, str]) -> None:
@@ -134,6 +145,23 @@ def _is_safe_url(url: str) -> bool:
     return bool(addresses)
 
 
+def _give_up(url: str, reason: str, **details: object) -> None:
+    """Log why a fetch was abandoned, then return None.
+
+    Enrichment stays silent to the *caller* — that is the whole design — but
+    silent to the caller is not the same as invisible in production. Without
+    this there is no way to tell a blocked request from a timeout from a
+    redirect loop, since every failure path looks identical from the outside.
+
+    WARNING rather than INFO deliberately: nothing configures logging, so
+    uvicorn leaves the root logger at WARNING and an INFO record would be
+    dropped before it ever reached the log.
+    """
+    extra = "".join(f" {key}={value!r}" for key, value in details.items())
+    logger.warning("Metadata fetch gave up (%s): %s%s", reason, url, extra)
+    return None
+
+
 def _fetch_html(url: str) -> tuple[str, str] | None:
     """Returns `(final_url, html)`, or None if anything at all goes wrong."""
     headers = {
@@ -146,7 +174,7 @@ def _fetch_html(url: str) -> tuple[str, str] | None:
     with requests.Session() as session:
         for _ in range(MAX_REDIRECTS + 1):
             if not _is_safe_url(current):
-                return None
+                return _give_up(current, "unsafe or unresolvable host")
 
             try:
                 # Redirects are followed by hand so each hop can be re-validated.
@@ -157,32 +185,41 @@ def _fetch_html(url: str) -> tuple[str, str] | None:
                     allow_redirects=False,
                     stream=True,
                 )
-            except requests.RequestException:
-                return None
+            except requests.RequestException as exc:
+                # The exception class is the useful part: Timeout, SSLError and
+                # ConnectionError each point somewhere completely different.
+                return _give_up(current, "request failed", error=type(exc).__name__, detail=str(exc))
 
             with response:
                 if response.is_redirect or response.is_permanent_redirect:
                     location = response.headers.get("location")
                     if not location:
-                        return None
+                        return _give_up(current, "redirect with no location", status=response.status_code)
                     current = urljoin(current, location)
                     continue
 
                 if response.status_code != 200:
-                    return None
+                    # 401/403/429 here is the signature of a site refusing
+                    # server-side fetches outright.
+                    return _give_up(
+                        current,
+                        "non-200 response",
+                        status=response.status_code,
+                        elapsed=response.elapsed.total_seconds(),
+                    )
 
                 content_type = response.headers.get("content-type", "")
                 if "html" not in content_type.lower():
-                    return None
+                    return _give_up(current, "not html", content_type=content_type)
 
                 try:
                     body = _read_capped(response)
-                except requests.RequestException:
-                    return None
+                except requests.RequestException as exc:
+                    return _give_up(current, "read failed", error=type(exc).__name__, detail=str(exc))
 
             return current, _decode(body, content_type)
 
-    return None
+    return _give_up(url, "too many redirects", limit=MAX_REDIRECTS, last_url=current)
 
 
 def _read_capped(response: requests.Response) -> bytes:
