@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { hostname } from '../utils/format';
+import { sourceName } from '../utils/sources';
 
 /**
  * The site's favicon, falling back to a built-in logo for the handful of sites
@@ -43,26 +43,14 @@ const InstagramMark = (p) => (
   </svg>
 );
 
-// Matched against the registrable domain, so mobile and short-link variants
-// (m.facebook.com, youtu.be, fb.watch) resolve to the same mark.
-const BRANDS = [
-  { domains: ['youtube.com', 'youtu.be'], Icon: YouTubeMark },
-  { domains: ['facebook.com', 'fb.com', 'fb.watch'], Icon: FacebookMark },
-  { domains: ['instagram.com'], Icon: InstagramMark },
-];
-
-function brandFor(url) {
-  // `hostname` returns null for a plain note, and already strips `www.` — the
-  // strip here is belt-and-braces so this does not depend on that detail.
-  const host = (hostname(url) || '').replace(/^www\./, '').toLowerCase();
-  if (!host) return null;
-
-  return (
-    BRANDS.find(({ domains }) =>
-      domains.some((domain) => host === domain || host.endsWith(`.${domain}`)),
-    ) || null
-  );
-}
+// Keyed by the source names in utils/sources.js, so domain matching lives in
+// exactly one place and the filter chips and these marks can never disagree
+// about what counts as Instagram.
+const MARKS = {
+  YouTube: YouTubeMark,
+  Facebook: FacebookMark,
+  Instagram: InstagramMark,
+};
 
 export default function SiteIcon({ src, url, className }) {
   // Tracked by src rather than a boolean so reusing this instance for a
@@ -85,10 +73,9 @@ export default function SiteIcon({ src, url, className }) {
     );
   }
 
-  const brand = brandFor(url);
-  if (!brand) return null;
+  const Icon = MARKS[sourceName(url)];
+  if (!Icon) return null;
 
   // Decorative: the site name is already rendered as text right beside it.
-  const { Icon } = brand;
   return <Icon className={className} />;
 }

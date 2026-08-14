@@ -33,6 +33,16 @@
   display: none;
 }
 
+/* Two filter rows sit closer together than a single row's default margins
+   would put them, so they read as one control group rather than two. */
+.items__filters--sources {
+  margin-bottom: 0;
+}
+
+.items__filters--sources + .items__filters {
+  margin-top: 8px;
+}
+
 .items__list {
   display: flex;
   flex-direction: column;

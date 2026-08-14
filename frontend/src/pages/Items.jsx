@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
 import { api } from '../api/client';
+import { sourceName } from '../utils/sources';
 import './Items.css';
 
 const ALL = '__all__';
@@ -10,6 +11,7 @@ const UNCATEGORIZED = '__none__';
 export default function Items() {
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState(ALL);
+  const [source, setSource] = useState(ALL);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,11 +31,28 @@ export default function Items() {
     [items],
   );
 
+  // Ordered by how much you actually saved from each, so the platforms you use
+  // sit at the front and one-off websites fall to the end.
+  const sources = useMemo(() => {
+    const counts = new Map();
+    for (const item of items) {
+      const name = sourceName(item.content);
+      counts.set(name, (counts.get(name) || 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([name]) => name);
+  }, [items]);
+
   const visible = useMemo(() => {
-    if (filter === ALL) return items;
-    if (filter === UNCATEGORIZED) return items.filter((i) => !i.topic);
-    return items.filter((i) => i.topic === filter);
-  }, [items, filter]);
+    return items.filter((item) => {
+      const topicOk =
+        filter === ALL ||
+        (filter === UNCATEGORIZED ? !item.topic : item.topic === filter);
+      const sourceOk = source === ALL || sourceName(item.content) === source;
+      return topicOk && sourceOk;
+    });
+  }, [items, filter, source]);
 
   function handleTopicChange(id, topic) {
     // Optimistic: the row is already updated server-side on success.
@@ -53,6 +72,22 @@ export default function Items() {
           <h1 className="page-title items__title">Saved</h1>
           <span className="items__count">{items.length}</span>
         </div>
+
+        {/* Source is derived from the URL, so this row needs no tagging effort
+            and covers every item automatically. Only rendered once there is
+            more than one source to choose between. */}
+        {sources.length > 1 && (
+          <div className="items__filters items__filters--sources">
+            <Chip active={source === ALL} onClick={() => setSource(ALL)}>
+              All sources
+            </Chip>
+            {sources.map((s) => (
+              <Chip key={s} active={source === s} onClick={() => setSource(s)}>
+                {s}
+              </Chip>
+            ))}
+          </div>
+        )}
 
         <div className="items__filters">
           <Chip active={filter === ALL} onClick={() => setFilter(ALL)}>
@@ -79,7 +114,11 @@ export default function Items() {
             <p>
               {items.length === 0
                 ? 'Share a link from any app to get started'
-                : 'No items in this topic'}
+                : filter !== ALL && source !== ALL
+                  ? 'Nothing matches both of these filters'
+                  : source !== ALL
+                    ? `Nothing saved from ${source}`
+                    : 'No items in this topic'}
             </p>
           </div>
         ) : (
