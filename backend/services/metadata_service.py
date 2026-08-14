@@ -25,7 +25,10 @@ logger = logging.getLogger(__name__)
 # never worth holding a worker on.
 CONNECT_TIMEOUT_SECONDS = 3
 READ_TIMEOUT_SECONDS = 5
-MAX_RESPONSE_BYTES = 256 * 1024
+# Generous because a few big sites bury their og: tags a long way down —
+# YouTube's sit ~700 KB into a 1.5 MB page. This is only a ceiling: _read_capped
+# stops at </head>, so an ordinary page still reads a few KB and no more.
+MAX_RESPONSE_BYTES = 1024 * 1024
 MAX_REDIRECTS = 3
 
 MAX_TEXT_LENGTH = 300
@@ -223,11 +226,28 @@ def _fetch_html(url: str) -> tuple[str, str] | None:
 
 
 def _read_capped(response: requests.Response) -> bytes:
+    """Reads until </head>, the size ceiling, or the end of the response.
+
+    Stopping at </head> is what makes a 1 MB ceiling affordable: everything we
+    parse lives in the head, so a small page still costs a few KB, while a page
+    that buries its og: tags deep (YouTube) is still read far enough to find
+    them. A fixed small cap could not do both.
+    """
     body = bytearray()
+    searched = 0
+
     for chunk in response.iter_content(8192):
         body.extend(chunk)
+
+        # Resume the search just behind the previous end so a </head> split
+        # across two chunks is still found, without rescanning from the top.
+        if body.find(b"</head>", max(0, searched - len(b"</head>"))) != -1:
+            break
+        searched = len(body)
+
         if len(body) >= MAX_RESPONSE_BYTES:
             break
+
     return bytes(body[:MAX_RESPONSE_BYTES])
 
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import RemoteImage from './RemoteImage';
+import SiteIcon from './SiteIcon';
 import TopicInput from './TopicInput';
 import { api } from '../api/client';
 import { displayTitle, hostname, relativeTime, siteLabel } from '../utils/format';
@@ -44,9 +45,10 @@ export default function ItemCard({ item, topics, onTopicChange }) {
           <div className="item-card__text">
             <h2 className="item-card__title">{displayTitle(item)}</h2>
             <p className="item-card__host meta">
-              <RemoteImage
+              <SiteIcon
                 className="item-card__favicon"
                 src={item.fetched_favicon}
+                url={item.content}
               />
               {source}
             </p>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckIcon, ExternalLinkIcon, SkipIcon } from '../components/Icons';
 import RemoteImage from '../components/RemoteImage';
+import SiteIcon from '../components/SiteIcon';
 import { api } from '../api/client';
 import { displayTitle, hostname, siteLabel } from '../utils/format';
 import './Review.css';
@@ -102,7 +103,11 @@ export default function Review() {
         <h1 className="review__title">{displayTitle(item)}</h1>
         {host && (
           <p className="meta review__host">
-            <RemoteImage className="review__favicon" src={item.fetched_favicon} />
+            <SiteIcon
+              className="review__favicon"
+              src={item.fetched_favicon}
+              url={item.content}
+            />
             {siteLabel(item)}
           </p>
         )}
