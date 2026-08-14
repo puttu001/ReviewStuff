@@ -1,11 +1,11 @@
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
 from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse, UpdateItemRequest
 from database.client import get_db
 from database.models import User
 from services.auth_service import create_access_token, get_current_user, get_or_create_user, verify_google_token
-from services.items_service import UNSET, list_items, update_item
+from services.items_service import UNSET, delete_item, list_items, update_item
 from services.metadata_service import enrich_item, needs_metadata
 from services.review_service import apply_review_action, get_review_items
 from services.save_service import extract_content, save_item
@@ -57,6 +57,14 @@ def patch_item(
 ):
     topic = payload.topic if 'topic' in payload.model_fields_set else UNSET
     return update_item(db, user_id=current_user.id, item_id=item_id, topic=topic)
+
+@router.delete('/items/{item_id}', status_code=status.HTTP_204_NO_CONTENT)
+def remove_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    delete_item(db, user_id=current_user.id, item_id=item_id)
 
 @router.get('/review-today', response_model=list[SavedItemResponse])
 def review_today(

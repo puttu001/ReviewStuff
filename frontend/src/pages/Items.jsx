@@ -40,6 +40,12 @@ export default function Items() {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, topic } : i)));
   }
 
+  function handleDelete(id) {
+    // Called only after the server confirms, so the count and the topic list
+    // both fall out of this one update.
+    setItems((prev) => prev.filter((i) => i.id !== id));
+  }
+
   return (
     <>
       <div className="page">
@@ -84,6 +90,7 @@ export default function Items() {
                 item={item}
                 topics={topics}
                 onTopicChange={handleTopicChange}
+                onDelete={handleDelete}
               />
             ))}
           </div>

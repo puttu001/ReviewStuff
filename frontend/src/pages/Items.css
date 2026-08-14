@@ -114,6 +114,105 @@
   white-space: nowrap;
 }
 
+.item-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.item-card__menu {
+  position: relative;
+  display: flex;
+}
+
+/* An 18px glyph in a full 44px tap target — a menu is opened deliberately, and
+   a button rather than a swipe keeps the gesture from competing with scrolling
+   the list. */
+.item-card__menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px -12px 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+
+.item-card__menu-btn:active {
+  background: var(--border);
+  color: var(--text);
+}
+
+/* Opens upward: the button sits at the bottom of the card, so downward would
+   run into the bottom nav on the last row. */
+.item-card__menu-list {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% - 6px);
+  z-index: 2;
+  min-width: 148px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+}
+
+.item-card__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.item-card__menu-item:active {
+  background: var(--danger-soft);
+}
+
+.item-card__confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-card__confirm-label {
+  margin-right: auto;
+}
+
+.item-card__confirm-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.item-card__confirm-btn--delete {
+  background: var(--danger);
+  color: #fff;
+}
+
+.item-card__confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .items__skeleton {
   height: 220px;
   border-radius: var(--radius);

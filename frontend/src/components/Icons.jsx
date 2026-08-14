@@ -87,6 +87,23 @@ export const XIcon = (p) => (
   </svg>
 );
 
+export const MoreIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+export const TrashIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 7h16" />
+    <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    <path d="M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12" />
+    <path d="M10 11.5v5M14 11.5v5" />
+  </svg>
+);
+
 export const SpinnerIcon = (p) => (
   <svg {...base} className="spin" {...p}>
     <path d="M21 12a9 9 0 1 1-6.2-8.6" />

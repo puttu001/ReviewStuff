@@ -72,6 +72,8 @@ export const api = {
   updateItem: (id, { topic }) =>
     request(`/items/${id}`, { method: 'PATCH', body: { topic } }),
 
+  deleteItem: (id) => request(`/items/${id}`, { method: 'DELETE' }),
+
   getReviewToday: () => request('/review-today'),
 
   reviewItem: (id, action) =>
