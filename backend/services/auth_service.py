@@ -43,13 +43,19 @@ def verify_google_token(token: str) -> dict:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
 
 
-def get_or_create_user(db: Session, google_sub: str, email: str) -> User:
+def get_or_create_user(
+    db: Session, google_sub: str, email: str, picture: str | None = None
+) -> User:
     user = db.query(User).filter(User.google_sub == google_sub).one_or_none()
     if user is None:
-        user = User(google_sub=google_sub, email=email)
+        user = User(google_sub=google_sub, email=email, picture=picture)
         db.add(user)
-        db.commit()
-        db.refresh(user)
+    else:
+        # Google may update an email address or profile photo over time.
+        user.email = email
+        user.picture = picture
+    db.commit()
+    db.refresh(user)
     return user
 
 

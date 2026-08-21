@@ -64,6 +64,16 @@ export async function enqueueSave(payload, apiUrl) {
   db.close();
 }
 
+/** Remove saves owned by the account that is signing out. */
+export async function clearPendingSaves() {
+  const db = await openDb();
+  try {
+    await tx(db, PENDING_STORE, 'readwrite', (store) => store.clear());
+  } finally {
+    db.close();
+  }
+}
+
 export function isBackgroundSyncSupported() {
   return (
     'serviceWorker' in navigator &&

@@ -13,6 +13,13 @@ class AuthResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    email: str
+    picture: str | None
+
+
 class SaveItemRequest(BaseModel):
     url: str | None = None
     text: str | None = None

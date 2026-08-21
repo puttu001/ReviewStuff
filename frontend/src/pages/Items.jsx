@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import BottomNav from '../components/BottomNav';
+import AppHeader from '../components/AppHeader';
 import ItemCard from '../components/ItemCard';
 import { api } from '../api/client';
 import { sourceName } from '../utils/sources';
@@ -68,6 +69,7 @@ export default function Items() {
   return (
     <>
       <div className="page">
+        <AppHeader />
         <div className="items__header">
           <h1 className="page-title items__title">Saved</h1>
           <span className="items__count">{items.length}</span>

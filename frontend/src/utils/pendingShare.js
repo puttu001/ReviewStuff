@@ -1,5 +1,9 @@
 export const PENDING_SHARE_KEY = 'reviewstuff_pending_share';
 
+export function clearPendingShare() {
+  sessionStorage.removeItem(PENDING_SHARE_KEY);
+}
+
 /** Pull a share that arrived while signed out, if any. Clears it. */
 export function takePendingShare() {
   const raw = sessionStorage.getItem(PENDING_SHARE_KEY);

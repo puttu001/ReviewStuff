@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
-from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse, UpdateItemRequest
+from api.models import AuthResponse, GoogleAuthRequest, ReviewActionRequest, SaveItemRequest, SavedItemResponse, UpdateItemRequest, UserResponse
 from database.client import get_db
 from database.models import User
 from services.auth_service import create_access_token, get_current_user, get_or_create_user, verify_google_token
@@ -19,9 +19,18 @@ def root ():
 @router.post('/auth/google', response_model=AuthResponse)
 def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
     google_user = verify_google_token(payload.id_token)
-    user = get_or_create_user(db, google_sub=google_user["sub"], email=google_user["email"])
+    user = get_or_create_user(
+        db,
+        google_sub=google_user["sub"],
+        email=google_user["email"],
+        picture=google_user.get("picture"),
+    )
     token = create_access_token(user.id)
     return AuthResponse(access_token=token)
+
+@router.get('/me', response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
 
 @router.post('/save', response_model=SavedItemResponse)
 def save_link(

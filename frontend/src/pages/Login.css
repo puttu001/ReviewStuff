@@ -1,6 +1,10 @@
 .login {
+  /* Increase this value to move the Google sign-in area further up. */
+  --login-bottom-space: 60px;
+
   align-items: center;
   text-align: center;
+  padding-bottom: calc(var(--login-bottom-space) + env(safe-area-inset-bottom));
 }
 
 .login__brand {

@@ -63,6 +63,8 @@ export const api = {
       auth: false,
     }),
 
+  getMe: () => request('/me'),
+
   save: ({ url, text, title, topic }) =>
     request('/save', { method: 'POST', body: { url, text, title, topic } }),
 

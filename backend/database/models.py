@@ -14,6 +14,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     google_sub: Mapped[str] = mapped_column(unique=True, index=True)
     email: Mapped[str] = mapped_column(unique=True, index=True)
+    picture: Mapped[str | None]
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     saved_items: Mapped[list["SavedItem"]] = relationship(

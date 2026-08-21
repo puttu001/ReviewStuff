@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import BottomNav from '../components/BottomNav';
+import AppHeader from '../components/AppHeader';
 import Toast from '../components/Toast';
 import TopicInput from '../components/TopicInput';
 import { api } from '../api/client';
@@ -62,7 +63,7 @@ export default function Save() {
   return (
     <>
       <form className="page" onSubmit={handleSave}>
-        <h1 className="page-title">Save something</h1>
+        <AppHeader title="Save something" />
 
         <div className="field">
           <textarea

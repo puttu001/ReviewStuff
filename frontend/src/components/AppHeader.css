@@ -10,15 +10,29 @@
   font-weight: 600;
 }
 
-.app-header__toggle {
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  margin-right: -10px;
+}
+
+.app-header__button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
-  margin-right: -10px;
   border: none;
   background: none;
   color: var(--text-secondary);
   border-radius: 50%;
+  text-decoration: none;
+}
+
+.app-header__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--border);
 }

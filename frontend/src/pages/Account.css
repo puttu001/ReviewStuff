@@ -1,0 +1,29 @@
+.account__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+
+.account__signout {
+  color: var(--danger);
+}
+
+.account__confirmation h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.account__confirmation p {
+  margin: 0 0 16px;
+}
+
+.account__confirmation-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.account__danger {
+  background: var(--danger);
+  color: #fff;
+}
