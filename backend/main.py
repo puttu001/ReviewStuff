@@ -33,5 +33,6 @@ app.add_middleware(
 app.include_router(router)
 
 @app.get('/health')
+@app.head('/health', include_in_schema=False)
 def health_status():
     return {"status": "ok"}
