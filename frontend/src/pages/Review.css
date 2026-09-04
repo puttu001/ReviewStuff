@@ -1,11 +1,13 @@
 .review {
-  gap: 16px;
+  gap: 14px;
+  overflow: hidden;
 }
 
 .review__progress {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 24px;
 }
 
 .review__dots {
@@ -14,68 +16,269 @@
 }
 
 .review__dot {
-  width: 8px;
+  width: 18px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--border);
+  transition:
+    width 0.2s ease,
+    background 0.2s ease;
 }
 
 .review__dot--on {
   background: var(--accent);
+  width: 30px;
 }
 
-.review__card {
+.review__dot--done {
+  background: var(--success);
+}
+
+.review-carousel {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 20px;
+  min-height: 0;
 }
 
-.review__title {
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.35;
-  margin: 4px 0 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
+.review-carousel__stack {
+  --review-card-width: min(75vw, 320px);
+  --review-card-height: min(58dvh, 450px);
+  position: relative;
+  flex: 1;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-carousel__card {
+  position: absolute;
+  width: var(--review-card-width);
+  height: var(--review-card-height);
+  min-height: 340px;
+  max-height: 100%;
   overflow: hidden;
-  overflow-wrap: anywhere;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 24px;
+  background: #292524;
+  box-shadow:
+    0 24px 50px rgb(28 25 23 / 24%),
+    0 3px 10px rgb(28 25 23 / 14%);
+  color: #fff;
+  pointer-events: none;
+  transform-origin: 50% 85%;
+  will-change: transform;
 }
 
-.review__image {
+.review-carousel__card--no-image {
+  background:
+    radial-gradient(circle at 22% 18%, rgb(255 255 255 / 18%), transparent 27%),
+    linear-gradient(145deg, #6366f1 0%, #4338ca 46%, #292254 100%);
+}
+
+.review-carousel__image {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-height: 180px;
+  height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
-  background: var(--border);
+  pointer-events: none;
 }
 
-.review__host {
+.review-carousel__glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgb(255 255 255 / 16%), transparent 35%);
+}
+
+.review-carousel__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(12 10 9 / 94%) 0%,
+    rgb(12 10 9 / 56%) 36%,
+    rgb(12 10 9 / 4%) 70%
+  );
+}
+
+.review-carousel__shade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+
+.review-carousel__topic {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  max-width: calc(100% - 36px);
+  overflow: hidden;
+  padding: 7px 12px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: #1c1917;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.review-carousel__copy {
+  position: absolute;
+  right: 22px;
+  bottom: 76px;
+  left: 22px;
+}
+
+.review-carousel__title {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 8px;
+  font-size: clamp(20px, 6vw, 27px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 36%);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.review-carousel__source {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
   margin: 0;
+  color: rgb(255 255 255 / 72%);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.review__favicon {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
+.review-carousel__favicon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border-radius: 4px;
   object-fit: contain;
-  vertical-align: -2px;
-  margin-right: 6px;
 }
 
-.review__card .btn {
-  margin-top: 16px;
+.review-carousel__drag-surface {
+  position: absolute;
+  top: max(calc((100% - var(--review-card-height)) / 2), 0px);
+  left: 50%;
+  z-index: 150;
+  width: var(--review-card-width);
+  height: calc(var(--review-card-height) - 66px);
+  max-height: calc(100% - 66px);
+  margin-left: calc(var(--review-card-width) / -2);
+  border-radius: 24px 24px 0 0;
+  cursor: grab;
+  outline: none;
+  touch-action: pan-y;
+}
+
+.review-carousel__drag-surface:active {
+  cursor: grabbing;
+}
+
+.review-carousel__drag-surface:focus-visible {
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--accent);
+}
+
+.review-carousel__open {
+  position: absolute;
+  bottom: max(calc((100% - var(--review-card-height)) / 2 + 16px), 16px);
+  z-index: 160;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  color: #1c1917;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+}
+
+.review-carousel__open:active {
+  transform: scale(0.97);
+}
+
+.review-carousel__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.review-carousel__page {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.2s ease;
+}
+
+.review-carousel__page--active {
+  width: 18px;
+  border-radius: 999px;
+  background: var(--text-secondary);
+}
+
+.review-carousel__hint {
+  margin-left: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .review__actions {
   display: flex;
   gap: 12px;
+  position: relative;
+  z-index: 200;
 }
 
 .review__done {
   background: var(--success-soft);
   color: var(--success);
+}
+
+@media (max-height: 680px) {
+  .review-carousel__stack {
+    --review-card-height: min(53dvh, 360px);
+    min-height: 315px;
+  }
+
+  .review-carousel__card {
+    min-height: 300px;
+  }
+
+  .review-carousel__title {
+    font-size: 20px;
+    -webkit-line-clamp: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-carousel__card,
+  .review-carousel__page,
+  .review__dot {
+    transition: none;
+  }
 }

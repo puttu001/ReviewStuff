@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckIcon, ExternalLinkIcon, SkipIcon } from '../components/Icons';
-import RemoteImage from '../components/RemoteImage';
-import SiteIcon from '../components/SiteIcon';
+import { CheckIcon, SkipIcon } from '../components/Icons';
+import ReviewCarousel from '../components/ReviewCarousel';
 import { api } from '../api/client';
-import { displayTitle, hostname, siteLabel } from '../utils/format';
 import './Review.css';
 
 export default function Review() {
   const [queue, setQueue] = useState([]);
-  const [index, setIndex] = useState(0);
+  const [initialCount, setInitialCount] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -17,7 +16,11 @@ export default function Review() {
     let alive = true;
     api
       .getReviewToday()
-      .then((data) => alive && setQueue(data))
+      .then((data) => {
+        if (!alive) return;
+        setQueue(data);
+        setInitialCount(data.length);
+      })
       .catch(() => {})
       .finally(() => alive && setLoading(false));
     return () => {
@@ -25,14 +28,18 @@ export default function Review() {
     };
   }, []);
 
-  const item = queue[index];
+  const item = queue[activeIndex];
 
   async function act(action) {
     if (!item || busy) return;
     setBusy(true);
     try {
       await api.reviewItem(item.id, action);
-      setIndex((i) => i + 1);
+      setQueue((current) => [
+        ...current.slice(activeIndex + 1),
+        ...current.slice(0, activeIndex),
+      ]);
+      setActiveIndex(0);
     } catch {
       // Leave the user on the current card; retrying is safe.
     } finally {
@@ -44,21 +51,7 @@ export default function Review() {
     return <div className="page page--no-nav" />;
   }
 
-  if (queue.length === 0) {
-    return (
-      <div className="page page--no-nav">
-        <div className="center-state">
-          <h2>Nothing to review today</h2>
-          <p>Your next items are scheduled for tomorrow</p>
-          <Link to="/" className="btn btn--text">
-            Back to home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (index >= queue.length) {
+  if (initialCount > 0 && queue.length === 0) {
     return (
       <div className="page page--no-nav">
         <div className="center-state">
@@ -75,60 +68,48 @@ export default function Review() {
     );
   }
 
-  const host = hostname(item.content);
+  if (queue.length === 0) {
+    return (
+      <div className="page page--no-nav">
+        <div className="center-state">
+          <h2>Nothing to review today</h2>
+          <p>Your next items are scheduled for tomorrow</p>
+          <Link to="/" className="btn btn--text">
+            Back to home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page page--no-nav review">
       <div className="review__progress">
         <div className="review__dots">
-          {queue.map((q, i) => (
+          {Array.from({ length: initialCount }, (_, i) => (
             <span
-              key={q.id}
-              className={`review__dot ${i <= index ? 'review__dot--on' : ''}`}
+              key={i}
+              className={`review__dot ${
+                i < initialCount - queue.length ? 'review__dot--done' : ''
+              } ${i === initialCount - queue.length ? 'review__dot--on' : ''}`}
             />
           ))}
         </div>
         <span className="meta">
-          {index + 1} of {queue.length}
+          {initialCount - queue.length + 1} of {initialCount}
         </span>
       </div>
 
-      <article className="card review__card">
-        <span className={`chip ${item.topic ? '' : 'chip--add'}`}>
-          {item.topic || 'Uncategorized'}
-        </span>
-
-        <RemoteImage className="review__image" src={item.fetched_image} />
-
-        <h1 className="review__title">{displayTitle(item)}</h1>
-        {host && (
-          <p className="meta review__host">
-            <SiteIcon
-              className="review__favicon"
-              src={item.fetched_favicon}
-              url={item.content}
-            />
-            {siteLabel(item)}
-          </p>
-        )}
-
-        <div className="spacer" />
-
-        {host && (
-          <a
-            className="btn btn--outline"
-            href={item.content}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <ExternalLinkIcon width={18} height={18} />
-            Open
-          </a>
-        )}
-      </article>
+      <ReviewCarousel
+        key={queue.map((queueItem) => queueItem.id).join('-')}
+        items={queue}
+        activeIndex={activeIndex}
+        onActiveIndexChange={setActiveIndex}
+      />
 
       <div className="review__actions">
         <button
+          type="button"
           className="btn btn--outline"
           onClick={() => act('skipped')}
           disabled={busy}
@@ -137,6 +118,7 @@ export default function Review() {
           Skip
         </button>
         <button
+          type="button"
           className="btn btn--success"
           onClick={() => act('reviewed')}
           disabled={busy}
