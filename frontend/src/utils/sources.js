@@ -17,6 +17,7 @@ export const SOURCES = [
   { name: 'YouTube', domains: ['youtube.com', 'youtu.be'] },
   { name: 'X', domains: ['x.com', 'twitter.com', 't.co'] },
   { name: 'LinkedIn', domains: ['linkedin.com', 'lnkd.in'] },
+  { name: 'Threads', domains: ['threads.com', 'threads.net'] },
   { name: 'Reddit', domains: ['reddit.com', 'redd.it'] },
   { name: 'WhatsApp', domains: ['whatsapp.com', 'wa.me'] },
 ];

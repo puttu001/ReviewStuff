@@ -13,8 +13,6 @@ import { displayTitle, hostname, siteLabel } from '../utils/format';
 function carouselConfig(width) {
   if (width < 390) {
     return {
-      distanceDivisor: 95,
-      velocityDivisor: 600,
       sensitivity: 180,
       xMultiplier: 42,
       yMultiplier: 15,
@@ -24,8 +22,6 @@ function carouselConfig(width) {
   }
 
   return {
-    distanceDivisor: 120,
-    velocityDivisor: 700,
     sensitivity: 220,
     xMultiplier: 54,
     yMultiplier: 18,
@@ -41,6 +37,7 @@ function wrapIndex(index, total) {
 export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange }) {
   const progress = useMotionValue(activeIndex);
   const startProgress = useRef(activeIndex);
+  const activeAnimation = useRef(null);
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 390 : window.innerWidth,
   );
@@ -58,7 +55,8 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
   }, []);
 
   function moveTo(target) {
-    animate(progress, target, {
+    activeAnimation.current?.stop();
+    activeAnimation.current = animate(progress, target, {
       type: 'spring',
       stiffness: 220,
       damping: 28,
@@ -68,16 +66,9 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
   }
 
   function handleDragEnd(_, info) {
-    const distanceShift = -info.offset.x / config.distanceDivisor;
-    const velocityShift = -info.velocity.x / config.velocityDivisor;
-    let shift = Math.round(distanceShift + velocityShift);
-
-    if (shift === 0 && Math.abs(info.offset.x) > 42) {
-      shift = info.offset.x < 0 ? 1 : -1;
-    }
-
-    shift = Math.max(-2, Math.min(2, shift));
-    moveTo(Math.round(startProgress.current) + shift);
+    const shift =
+      Math.abs(info.offset.x) >= 50 ? (info.offset.x < 0 ? 1 : -1) : 0;
+    moveTo(startProgress.current + shift);
   }
 
   const activeItem = items[activeIndex];
@@ -95,11 +86,18 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
           drag={total > 1 ? 'x' : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0}
+          dragMomentum={false}
           onDragStart={() => {
-            startProgress.current = progress.get();
+            activeAnimation.current?.stop();
+            startProgress.current = Math.round(progress.get());
+            progress.set(startProgress.current);
           }}
           onDrag={(_, info) => {
-            progress.set(progress.get() - info.delta.x / config.sensitivity);
+            const dragProgress = Math.max(
+              -0.85,
+              Math.min(0.85, -info.offset.x / config.sensitivity),
+            );
+            progress.set(startProgress.current + dragProgress);
           }}
           onDragEnd={handleDragEnd}
           onKeyDown={(event) => {

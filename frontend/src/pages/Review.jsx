@@ -86,17 +86,15 @@ export default function Review() {
     <div className="page page--no-nav review">
       <div className="review__progress">
         <div className="review__dots">
-          {Array.from({ length: initialCount }, (_, i) => (
+          {queue.map((queueItem, i) => (
             <span
-              key={i}
-              className={`review__dot ${
-                i < initialCount - queue.length ? 'review__dot--done' : ''
-              } ${i === initialCount - queue.length ? 'review__dot--on' : ''}`}
+              key={queueItem.id}
+              className={`review__dot ${i === activeIndex ? 'review__dot--on' : ''}`}
             />
           ))}
         </div>
-        <span className="meta">
-          {initialCount - queue.length + 1} of {initialCount}
+        <span className="meta" aria-live="polite">
+          {activeIndex + 1} of {queue.length}
         </span>
       </div>
 
