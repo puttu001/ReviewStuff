@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from database.models import SavedItem
 
-DAILY_REVIEW_LIMIT = 3
-REVIEWED_INTERVAL_DAYS = 3
+DAILY_REVIEW_LIMIT = 5
+REVIEW_INTERVAL_DAYS = (1, 3, 10, 15, 25, 30)
 SKIPPED_INTERVAL_DAYS = 1
 
 
@@ -16,6 +16,10 @@ def _utc_now() -> datetime:
 
 def _end_of_today() -> datetime:
     return datetime.combine(_utc_now().date(), time.max)
+
+
+def _next_review_interval(review_stage: int) -> int:
+    return REVIEW_INTERVAL_DAYS[min(review_stage, len(REVIEW_INTERVAL_DAYS) - 1)]
 
 
 def get_review_items(db: Session, user_id: int) -> list[SavedItem]:
@@ -40,7 +44,8 @@ def apply_review_action(db: Session, user_id: int, item_id: int, action: str) ->
     now = _utc_now()
     if action == "reviewed":
         item.last_reviewed = now
-        item.next_review_date = now + timedelta(days=REVIEWED_INTERVAL_DAYS)
+        item.next_review_date = now + timedelta(days=_next_review_interval(item.review_stage))
+        item.review_stage += 1
     else:
         item.next_review_date = now + timedelta(days=SKIPPED_INTERVAL_DAYS)
 

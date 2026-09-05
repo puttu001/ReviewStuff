@@ -47,5 +47,6 @@ class SavedItem(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     last_reviewed: Mapped[datetime | None] = mapped_column(DateTime)
     next_review_date: Mapped[datetime] = mapped_column(DateTime)
+    review_stage: Mapped[int] = mapped_column(default=0, server_default="0")
 
     user: Mapped["User"] = relationship(back_populates="saved_items")
