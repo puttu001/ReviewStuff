@@ -73,6 +73,57 @@
     linear-gradient(145deg, #6366f1 0%, #4338ca 46%, #292254 100%);
 }
 
+.review-carousel__stack--embed {
+  --review-card-width: min(calc(100vw - 40px), 360px);
+}
+
+.review-carousel__card--embed {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 66px;
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+  pointer-events: auto;
+}
+
+.review-carousel__embed-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 54px;
+  min-width: 0;
+}
+
+.review-carousel__embed-heading h1 {
+  overflow: hidden;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-carousel__embed-label {
+  min-width: 0;
+}
+
+.review-carousel__embed-label p {
+  overflow: hidden;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-carousel__embed-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
 .review-carousel__image {
   position: absolute;
   inset: 0;
@@ -186,6 +237,12 @@
   cursor: grabbing;
 }
 
+/* Keep the swipe target on the heading so video controls remain clickable. */
+.review-carousel__drag-surface--embed {
+  height: 54px;
+  max-height: 54px;
+}
+
 .review-carousel__drag-surface:focus-visible {
   box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--accent);
 }
@@ -241,6 +298,23 @@
   margin-left: 6px;
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+.review-carousel__browse {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.review-carousel__browse:focus-visible,
+.instagram-embed__retry:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .review__actions {

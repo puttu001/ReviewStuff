@@ -8,7 +8,9 @@ import {
 import { ExternalLinkIcon } from './Icons';
 import RemoteImage from './RemoteImage';
 import SiteIcon from './SiteIcon';
+import InstagramEmbed from './InstagramEmbed';
 import { displayTitle, hostname, siteLabel } from '../utils/format';
+import { instagramPostUrl } from '../utils/instagram';
 
 function carouselConfig(width) {
   if (width < 390) {
@@ -73,6 +75,7 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
 
   const activeItem = items[activeIndex];
   const activeHasLink = Boolean(activeItem && hostname(activeItem.content));
+  const activeHasEmbed = Boolean(activeItem && instagramPostUrl(activeItem.content));
 
   return (
     <section
@@ -80,9 +83,9 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
       aria-roledescription="carousel"
       aria-label="Items to review"
     >
-      <div className="review-carousel__stack">
+      <div className={`review-carousel__stack ${activeHasEmbed ? 'review-carousel__stack--embed' : ''}`}>
         <motion.div
-          className="review-carousel__drag-surface"
+          className={`review-carousel__drag-surface ${activeHasEmbed ? 'review-carousel__drag-surface--embed' : ''}`}
           drag={total > 1 ? 'x' : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0}
@@ -149,6 +152,16 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
 
       {total > 1 && (
         <div className="review-carousel__pagination" aria-label="Carousel position">
+          {activeHasEmbed && (
+            <button
+              type="button"
+              className="review-carousel__browse"
+              aria-label="Previous review item"
+              onClick={() => moveTo(Math.round(progress.get()) - 1)}
+            >
+              Previous
+            </button>
+          )}
           {items.map((item, index) => (
             <span
               key={item.id}
@@ -158,7 +171,18 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
               aria-hidden="true"
             />
           ))}
-          <span className="review-carousel__hint">Swipe to browse</span>
+          {activeHasEmbed ? (
+            <button
+              type="button"
+              className="review-carousel__browse"
+              aria-label="Next review item"
+              onClick={() => moveTo(Math.round(progress.get()) + 1)}
+            >
+              Next
+            </button>
+          ) : (
+            <span className="review-carousel__hint">Swipe to browse</span>
+          )}
         </div>
       )}
     </section>
@@ -192,48 +216,67 @@ function ReviewCard({ item, index, isActive, total, progress, config }) {
   const shadeOpacity = useTransform(offset, [-1, 0, 1], [0.36, 0, 0.36]);
   const copyOpacity = useTransform(offset, [-0.55, 0, 0.55], [0, 1, 0]);
   const host = hostname(item.content);
+  const embedUrl = instagramPostUrl(item.content);
+  const showEmbed = isActive && Boolean(embedUrl);
 
   return (
     <motion.article
       className={`review-carousel__card ${
         item.fetched_image ? '' : 'review-carousel__card--no-image'
-      }`}
+      } ${showEmbed ? 'review-carousel__card--embed' : ''}`}
       style={{ x, rotate, y, scale, opacity, zIndex }}
       aria-hidden={!isActive}
     >
-      {item.fetched_image && (
-        <RemoteImage
-          className="review-carousel__image"
-          src={item.fetched_image}
-          alt=""
-        />
-      )}
-
-      <div className="review-carousel__glow" />
-      <div className="review-carousel__gradient" />
-      <motion.div className="review-carousel__shade" style={{ opacity: shadeOpacity }} />
-
-      <motion.div className="review-carousel__topic" style={{ opacity: copyOpacity }}>
-        {item.topic || 'Uncategorized'}
-      </motion.div>
-
-      <motion.div className="review-carousel__copy" style={{ opacity: copyOpacity }}>
-        <h1 className="review-carousel__title">{displayTitle(item)}</h1>
-        <p className="review-carousel__source">
-          {host ? (
-            <>
-              <SiteIcon
-                className="review-carousel__favicon"
-                src={item.fetched_favicon}
-                url={item.content}
-              />
-              {siteLabel(item)}
-            </>
-          ) : (
-            'Note'
+      {showEmbed ? (
+        <>
+          <div className="review-carousel__embed-heading">
+            <SiteIcon className="review-carousel__favicon" url={item.content} />
+            <div className="review-carousel__embed-label">
+              <h1>{item.title?.trim() || 'Instagram post'}</h1>
+              <p>{item.topic || 'Uncategorized'}</p>
+            </div>
+          </div>
+          <div className="review-carousel__embed-body">
+            <InstagramEmbed key={embedUrl} url={embedUrl} />
+          </div>
+        </>
+      ) : (
+        <>
+          {item.fetched_image && (
+            <RemoteImage
+              className="review-carousel__image"
+              src={item.fetched_image}
+              alt=""
+            />
           )}
-        </p>
-      </motion.div>
+
+          <div className="review-carousel__glow" />
+          <div className="review-carousel__gradient" />
+          <motion.div className="review-carousel__shade" style={{ opacity: shadeOpacity }} />
+
+          <motion.div className="review-carousel__topic" style={{ opacity: copyOpacity }}>
+            {item.topic || 'Uncategorized'}
+          </motion.div>
+
+          <motion.div className="review-carousel__copy" style={{ opacity: copyOpacity }}>
+            <h1 className="review-carousel__title">{displayTitle(item)}</h1>
+            <p className="review-carousel__source">
+              {host ? (
+                <>
+                  <SiteIcon
+                    className="review-carousel__favicon"
+                    src={item.fetched_favicon}
+                    url={item.content}
+                  />
+                  {siteLabel(item)}
+                </>
+              ) : (
+                'Note'
+              )}
+            </p>
+          </motion.div>
+        </>
+      )}
     </motion.article>
   );
 }
