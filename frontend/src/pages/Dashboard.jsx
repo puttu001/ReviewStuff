@@ -81,13 +81,18 @@ function DashboardSummary({ due, total, sourceCounts }) {
 
         <div className="dash__source-heading">
           <h2>Sources</h2>
-          <span>Info only</span>
+          <span>View items</span>
         </div>
 
-        <dl className="dash__source-grid">
+        <nav className="dash__source-grid" aria-label="Saved items by source">
           {DASHBOARD_SOURCES.map(({ name, slug }) => (
-            <div className="card dash__source" key={name}>
-              <dt className="dash__source-name">
+            <Link
+              className="card dash__source"
+              key={name}
+              to={`/items?source=${encodeURIComponent(name)}`}
+              aria-label={`View saved ${name} items (${sourceCounts.get(name)})`}
+            >
+              <span className="dash__source-name">
                 <span
                   className={`dash__source-badge dash__source-badge--${slug}`}
                   aria-hidden="true"
@@ -95,11 +100,11 @@ function DashboardSummary({ due, total, sourceCounts }) {
                   <SourceIcon source={name} />
                 </span>
                 <span>{name}</span>
-              </dt>
-              <dd className="dash__source-count">{sourceCounts.get(name)}</dd>
-            </div>
+              </span>
+              <span className="dash__source-count">{sourceCounts.get(name)}</span>
+            </Link>
           ))}
-        </dl>
+        </nav>
       </section>
 
       <section className="dash__review" aria-label="Today's review">

@@ -1,21 +1,29 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import AppHeader from '../components/AppHeader';
 import ItemCard from '../components/ItemCard';
 import LinkPreviewDialog from '../components/LinkPreviewDialog';
+import { SearchIcon, XIcon } from '../components/Icons';
 import { api } from '../api/client';
 import { sourceName } from '../utils/sources';
 import './Items.css';
 
 const ALL = '__all__';
-const UNCATEGORIZED = '__none__';
 
 export default function Items() {
   const [items, setItems] = useState([]);
-  const [filter, setFilter] = useState(ALL);
-  const [source, setSource] = useState(ALL);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const source = searchParams.get('source') || ALL;
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [previewItem, setPreviewItem] = useState(null);
+  const searchId = useId();
+  const searchRef = useRef(null);
+  const searchButtonRef = useRef(null);
+  const sourcesRef = useRef(null);
+  const topicQuery = query.trim().toLowerCase();
 
   useEffect(() => {
     let alive = true;
@@ -42,20 +50,42 @@ export default function Items() {
       const name = sourceName(item.content);
       counts.set(name, (counts.get(name) || 0) + 1);
     }
-    return [...counts.entries()]
+    const names = [...counts.entries()]
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .map(([name]) => name);
-  }, [items]);
+    // A source opened from Home can have zero saved items. Keep it selectable.
+    if (source !== ALL && !counts.has(source)) names.push(source);
+    return names;
+  }, [items, source]);
+
+  useEffect(() => {
+    sourcesRef.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({
+      block: 'nearest', inline: 'nearest',
+    });
+  }, [source, sources]);
 
   const visible = useMemo(() => {
     return items.filter((item) => {
-      const topicOk =
-        filter === ALL ||
-        (filter === UNCATEGORIZED ? !item.topic : item.topic === filter);
+      const topicOk = !topicQuery || (item.topic || '').toLowerCase().includes(topicQuery);
       const sourceOk = source === ALL || sourceName(item.content) === source;
       return topicOk && sourceOk;
     });
-  }, [items, filter, source]);
+  }, [items, topicQuery, source]);
+
+  function selectSource(nextSource) {
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      if (nextSource === ALL) next.delete('source');
+      else next.set('source', nextSource);
+      return next;
+    }, { replace: true });
+  }
+
+  function closeSearch() {
+    setSearchOpen(false);
+    setQuery('');
+    searchButtonRef.current?.focus();
+  }
 
   function handleTopicChange(id, topic) {
     // Optimistic: the row is already updated server-side on success.
@@ -75,40 +105,76 @@ export default function Items() {
         <div className="items__header">
           <h1 className="page-title items__title">Saved</h1>
           <span className="items__count">{items.length}</span>
+          <button
+            ref={searchButtonRef}
+            type="button"
+            className={`items__search-btn${searchOpen ? ' items__search-btn--active' : ''}`}
+            aria-label="Search topics"
+            aria-expanded={searchOpen}
+            aria-controls={searchOpen ? searchId : undefined}
+            title="Search saved topics"
+            onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)}
+          >
+            <SearchIcon width={20} height={20} aria-hidden="true" />
+          </button>
         </div>
+
+        {searchOpen && (
+          <div id={searchId} className="items__search" role="search" aria-label="Search saved topics">
+            <div className="items__search-field">
+              <input
+                ref={searchRef}
+                type="search"
+                className="input items__search-input"
+                aria-label="Search saved topics"
+                placeholder="Search saved topics"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    closeSearch();
+                  }
+                }}
+                autoFocus
+              />
+              {query && (
+                <button
+                  type="button"
+                  className="items__search-clear"
+                  aria-label="Clear topic search"
+                  onClick={() => {
+                    setQuery('');
+                    searchRef.current?.focus();
+                  }}
+                >
+                  <XIcon width={18} height={18} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+            {topicQuery && !loading && (
+              <p className="meta items__search-count" role="status">
+                {visible.length} {visible.length === 1 ? 'item matches' : 'items match'}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Source is derived from the URL, so this row needs no tagging effort
             and covers every item automatically. Only rendered once there is
-            more than one source to choose between. */}
-        {sources.length > 1 && (
-          <div className="items__filters items__filters--sources">
-            <Chip active={source === ALL} onClick={() => setSource(ALL)}>
+            more than one source to choose between, or a source is selected. */}
+        {(sources.length > 1 || source !== ALL) && (
+          <div className="items__filters" ref={sourcesRef} role="group" aria-label="Filter by source">
+            <Chip active={source === ALL} onClick={() => selectSource(ALL)}>
               All sources
             </Chip>
             {sources.map((s) => (
-              <Chip key={s} active={source === s} onClick={() => setSource(s)}>
+              <Chip key={s} active={source === s} onClick={() => selectSource(s)}>
                 {s}
               </Chip>
             ))}
           </div>
         )}
-
-        <div className="items__filters">
-          <Chip active={filter === ALL} onClick={() => setFilter(ALL)}>
-            All
-          </Chip>
-          <Chip
-            active={filter === UNCATEGORIZED}
-            onClick={() => setFilter(UNCATEGORIZED)}
-          >
-            Uncategorized
-          </Chip>
-          {topics.map((t) => (
-            <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>
-              {t}
-            </Chip>
-          ))}
-        </div>
 
         {loading ? (
           <div className="items__skeleton" />
@@ -118,11 +184,11 @@ export default function Items() {
             <p>
               {items.length === 0
                 ? 'Share a link from any app to get started'
-                : filter !== ALL && source !== ALL
-                  ? 'Nothing matches both of these filters'
+                : topicQuery
+                  ? `No saved topics match “${query.trim()}”${source !== ALL ? ` in ${source}` : ''}`
                   : source !== ALL
                     ? `Nothing saved from ${source}`
-                    : 'No items in this topic'}
+                    : 'No items to show'}
             </p>
           </div>
         ) : (
@@ -157,6 +223,7 @@ function Chip({ active, onClick, children }) {
     <button
       type="button"
       className={`chip ${active ? 'chip--active' : ''}`}
+      aria-pressed={active}
       onClick={onClick}
     >
       {children}

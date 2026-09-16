@@ -56,6 +56,13 @@ export const PreviewIcon = (p) => (
   </svg>
 );
 
+export const SearchIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="10.5" cy="10.5" r="6.5" />
+    <path d="m16 16 5 5" />
+  </svg>
+);
+
 export const SkipIcon = (p) => (
   <svg {...base} {...p}>
     <path d="m5 4 10 8-10 8V4zM19 5v14" />
