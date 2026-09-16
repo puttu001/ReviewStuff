@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import BottomNav from '../components/BottomNav';
 import AppHeader from '../components/AppHeader';
 import ItemCard from '../components/ItemCard';
+import LinkPreviewDialog from '../components/LinkPreviewDialog';
 import { api } from '../api/client';
 import { sourceName } from '../utils/sources';
 import './Items.css';
@@ -14,6 +15,7 @@ export default function Items() {
   const [filter, setFilter] = useState(ALL);
   const [source, setSource] = useState(ALL);
   const [loading, setLoading] = useState(true);
+  const [previewItem, setPreviewItem] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -132,12 +134,20 @@ export default function Items() {
                 topics={topics}
                 onTopicChange={handleTopicChange}
                 onDelete={handleDelete}
+                onPreview={setPreviewItem}
               />
             ))}
           </div>
         )}
       </div>
       <BottomNav />
+      {previewItem && (
+        <LinkPreviewDialog
+          key={previewItem.id}
+          item={previewItem}
+          onClose={() => setPreviewItem(null)}
+        />
+      )}
     </>
   );
 }

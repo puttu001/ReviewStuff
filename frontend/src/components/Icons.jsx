@@ -48,6 +48,14 @@ export const ExternalLinkIcon = (p) => (
   </svg>
 );
 
+export const PreviewIcon = (p) => (
+  <svg {...base} strokeWidth={1.75} {...p}>
+    <rect x="2.5" y="2.5" width="19" height="19" rx="2.5" strokeWidth={1.5} />
+    <path d="M14 6.5h3.5V10M10 17.5H6.5V14" />
+    <path d="M17.5 6.5 14 10M10 14l-3.5 3.5" />
+  </svg>
+);
+
 export const SkipIcon = (p) => (
   <svg {...base} {...p}>
     <path d="m5 4 10 8-10 8V4zM19 5v14" />

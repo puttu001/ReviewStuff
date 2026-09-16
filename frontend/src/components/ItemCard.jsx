@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreIcon, TrashIcon } from './Icons';
+import { MoreIcon, PreviewIcon, TrashIcon } from './Icons';
 import RemoteImage from './RemoteImage';
 import SiteIcon from './SiteIcon';
 import TopicInput from './TopicInput';
 import { api } from '../api/client';
-import { displayTitle, hostname, relativeTime, siteLabel } from '../utils/format';
+import { displayTitle, hostname, isUrl, relativeTime, siteLabel } from '../utils/format';
 
-export default function ItemCard({ item, topics, onTopicChange, onDelete }) {
+export default function ItemCard({ item, topics, onTopicChange, onDelete, onPreview }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.topic || '');
   const [busy, setBusy] = useState(false);
@@ -150,6 +150,19 @@ export default function ItemCard({ item, topics, onTopicChange, onDelete }) {
 
           <div className="item-card__actions">
             <span className="meta item-card__time">{relativeTime(item.created_at)}</span>
+
+            {host && isUrl(item.content) && (
+              <button
+                type="button"
+                className="item-card__preview-btn"
+                aria-label={`Preview ${displayTitle(item)}`}
+                aria-haspopup="dialog"
+                title="Preview link"
+                onClick={() => onPreview(item)}
+              >
+                <PreviewIcon width={16} height={16} aria-hidden="true" />
+              </button>
+            )}
 
             <div className="item-card__menu" ref={menuRef}>
               <button
