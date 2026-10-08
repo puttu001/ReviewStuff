@@ -54,6 +54,14 @@ export default function ShareTarget() {
       .catch(() => {});
   }, [isAuthenticated]);
 
+  // Closing the window hands focus back to the app the share came from. If the
+  // browser refuses (window.close only works on windows the app opened itself,
+  // and support varies), we are still here after a beat — go home instead.
+  function leave() {
+    window.close();
+    setTimeout(() => navigate('/', { replace: true }), 300);
+  }
+
   async function handleSave(e) {
     e.preventDefault();
 
@@ -78,7 +86,7 @@ export default function ShareTarget() {
         await enqueueSave(payload, API_URL);
         await requestSaveSync();
         setStatus('queued');
-        setTimeout(() => navigate('/', { replace: true }), 1200);
+        setTimeout(leave, 1200);
         return;
       } catch {
         // Fall through to a direct save.
@@ -89,7 +97,7 @@ export default function ShareTarget() {
     try {
       await api.save(payload);
       setStatus('saved');
-      setTimeout(() => navigate('/', { replace: true }), 1200);
+      setTimeout(leave, 1200);
     } catch {
       setStatus('error');
     }
@@ -137,7 +145,7 @@ export default function ShareTarget() {
             <button
               type="button"
               className="btn btn--text"
-              onClick={() => navigate('/', { replace: true })}
+              onClick={leave}
             >
               Cancel
             </button>
