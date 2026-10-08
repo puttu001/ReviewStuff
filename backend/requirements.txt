@@ -8,3 +8,4 @@ alembic
 google-auth
 pyjwt
 requests
+psycopg
