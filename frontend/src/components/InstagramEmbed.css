@@ -58,13 +58,9 @@
   box-shadow: none !important;
 }
 
-/* The dialog owns scrolling; playback and post actions happen at the source. */
-.instagram-embed--preview {
+/* Used inside the preview dialog, which owns scrolling. */
+.instagram-embed--auto {
   height: auto;
   min-height: 360px;
   overflow: visible;
-}
-
-.instagram-embed--preview .instagram-embed__content {
-  pointer-events: none;
 }

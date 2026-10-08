@@ -33,7 +33,7 @@ export function linkEmbed(content) {
         provider: 'YouTube',
         type: 'frame',
         layout: vertical ? 'portrait' : 'video',
-        url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=0&controls=0&disablekb=1&fs=0`,
+        url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=0&playsinline=1&rel=0`,
       };
     }
   }

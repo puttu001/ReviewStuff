@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { loadInstagramEmbeds } from '../utils/instagram';
 import './InstagramEmbed.css';
 
-export default function InstagramEmbed({ url, previewOnly = false, onUnavailable }) {
+export default function InstagramEmbed({ url, autoHeight = false, onUnavailable }) {
   const containerRef = useRef(null);
   const [status, setStatus] = useState('loading');
   const [attempt, setAttempt] = useState(0);
@@ -42,10 +42,6 @@ export default function InstagramEmbed({ url, previewOnly = false, onUnavailable
       frame?.removeEventListener('error', unavailable);
       frame = nextFrame;
       frame.title = 'Instagram post';
-      if (previewOnly) {
-        frame.tabIndex = -1;
-        frame.setAttribute('allow', "autoplay 'none'");
-      }
       frame.addEventListener('load', ready);
       frame.addEventListener('error', unavailable);
     }
@@ -70,10 +66,10 @@ export default function InstagramEmbed({ url, previewOnly = false, onUnavailable
       frame?.removeEventListener('error', unavailable);
       container.replaceChildren();
     };
-  }, [url, attempt, previewOnly, onUnavailable]);
+  }, [url, attempt, onUnavailable]);
 
   return (
-    <div className={`instagram-embed instagram-embed--${status}${previewOnly ? ' instagram-embed--preview' : ''}`}>
+    <div className={`instagram-embed instagram-embed--${status}${autoHeight ? ' instagram-embed--auto' : ''}`}>
       {status !== 'ready' && (
         <div className="instagram-embed__status">
           <p role="status">
@@ -92,7 +88,7 @@ export default function InstagramEmbed({ url, previewOnly = false, onUnavailable
           )}
         </div>
       )}
-      <div className="instagram-embed__content" ref={containerRef} inert={previewOnly} />
+      <div className="instagram-embed__content" ref={containerRef} />
     </div>
   );
 }

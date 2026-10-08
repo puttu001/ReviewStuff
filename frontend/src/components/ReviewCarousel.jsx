@@ -8,9 +8,10 @@ import {
 import { ExternalLinkIcon } from './Icons';
 import RemoteImage from './RemoteImage';
 import SiteIcon from './SiteIcon';
+import FrameEmbed from './FrameEmbed';
 import InstagramEmbed from './InstagramEmbed';
 import { displayTitle, hostname, siteLabel } from '../utils/format';
-import { instagramPostUrl } from '../utils/instagram';
+import { linkEmbed } from '../utils/linkEmbed';
 
 function carouselConfig(width) {
   if (width < 390) {
@@ -75,7 +76,7 @@ export default function ReviewCarousel({ items, activeIndex, onActiveIndexChange
 
   const activeItem = items[activeIndex];
   const activeHasLink = Boolean(activeItem && hostname(activeItem.content));
-  const activeHasEmbed = Boolean(activeItem && instagramPostUrl(activeItem.content));
+  const activeHasEmbed = Boolean(activeItem && linkEmbed(activeItem.content));
 
   return (
     <section
@@ -216,8 +217,8 @@ function ReviewCard({ item, index, isActive, total, progress, config }) {
   const shadeOpacity = useTransform(offset, [-1, 0, 1], [0.36, 0, 0.36]);
   const copyOpacity = useTransform(offset, [-0.55, 0, 0.55], [0, 1, 0]);
   const host = hostname(item.content);
-  const embedUrl = instagramPostUrl(item.content);
-  const showEmbed = isActive && Boolean(embedUrl);
+  const embed = useMemo(() => linkEmbed(item.content), [item.content]);
+  const showEmbed = isActive && Boolean(embed);
 
   return (
     <motion.article
@@ -232,12 +233,16 @@ function ReviewCard({ item, index, isActive, total, progress, config }) {
           <div className="review-carousel__embed-heading">
             <SiteIcon className="review-carousel__favicon" url={item.content} />
             <div className="review-carousel__embed-label">
-              <h1>{item.title?.trim() || 'Instagram post'}</h1>
+              <h1>{item.title?.trim() || `${embed.provider} ${embed.provider === 'YouTube' ? 'video' : 'post'}`}</h1>
               <p>{item.topic || 'Uncategorized'}</p>
             </div>
           </div>
           <div className="review-carousel__embed-body">
-            <InstagramEmbed key={embedUrl} url={embedUrl} />
+            {embed.type === 'instagram' ? (
+              <InstagramEmbed key={embed.url} url={embed.url} />
+            ) : (
+              <FrameEmbed key={embed.url} embed={embed} />
+            )}
           </div>
         </>
       ) : (

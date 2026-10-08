@@ -112,10 +112,6 @@
   color-scheme: light;
 }
 
-.link-preview__embed-content {
-  pointer-events: none;
-}
-
 .link-preview__frame iframe {
   display: block;
   width: 100%;

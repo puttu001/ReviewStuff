@@ -13,14 +13,14 @@ describe('saved link embed URLs', () => {
     'https://youtu.be/M7lc1UVf-VE?si=tracking',
     'https://m.youtube.com/live/M7lc1UVf-VE',
     'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE',
-  ])('builds a YouTube preview with autoplay and keyboard playback disabled: %s', (url) => {
+  ])('builds a YouTube preview that waits for the user to press play: %s', (url) => {
     const embed = linkEmbed(url);
     expect(embed.provider).toBe('YouTube');
     const frame = new URL(embed.url);
     expect(frame.origin).toBe('https://www.youtube-nocookie.com');
     expect(frame.pathname).toBe('/embed/M7lc1UVf-VE');
     expect(frame.searchParams.get('autoplay')).toBe('0');
-    expect(frame.searchParams.get('disablekb')).toBe('1');
+    expect(frame.searchParams.has('controls')).toBe(false);
     expect(frame.searchParams.has('si')).toBe(false);
   });
 

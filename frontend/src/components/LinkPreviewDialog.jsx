@@ -89,16 +89,16 @@ export default function LinkPreviewDialog({ item, onClose }) {
             </p>
           </div>
         ) : embed.type === 'instagram' ? (
-          <InstagramEmbed url={embed.url} previewOnly onUnavailable={unavailable} />
+          <InstagramEmbed url={embed.url} autoHeight onUnavailable={unavailable} />
         ) : (
           <div className={`link-preview__frame link-preview__frame--${embed.layout}`}>
             {frameStatus === 'loading' && <p className="link-preview__loading meta" role="status">Loading {embed.provider} preview…</p>}
-            <div inert className="link-preview__embed-content">
+            <div className="link-preview__embed-content">
               <iframe
                 src={embed.url}
                 title={`${embed.provider} preview`}
-                tabIndex={-1}
-                allow="autoplay 'none'; fullscreen 'none'"
+                allow="encrypted-media; picture-in-picture; fullscreen"
+                allowFullScreen
                 onLoad={() => setFrameStatus('ready')}
                 onError={unavailable}
               />
@@ -125,7 +125,7 @@ export default function LinkPreviewDialog({ item, onClose }) {
       </div>
 
       <footer className="link-preview__footer">
-        <p className="meta">Open the original to play videos or interact.</p>
+        <p className="meta">Play and scroll right here, or open the original.</p>
         <a className="btn btn--primary" href={item.content} target="_blank" rel="noreferrer">
           Open link <ExternalLinkIcon width={18} height={18} aria-hidden="true" />
         </a>
