@@ -24,7 +24,12 @@ def extract_content(url: str | None, text: str | None) -> str:
 
 
 def save_item(
-    db: Session, user_id: int, content: str, title: str | None, topic: str | None = None
+    db: Session,
+    user_id: int,
+    content: str,
+    title: str | None,
+    topic: str | None = None,
+    description: str | None = None,
 ) -> SavedItem:
     tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
 
@@ -39,11 +44,20 @@ def save_item(
         existing.next_review_date = tomorrow
         if topic is not None:
             existing.topic = topic
+        if description is not None:
+            existing.description = description
         db.commit()
         db.refresh(existing)
         return existing
 
-    item = SavedItem(user_id=user_id, content=content, title=title, topic=topic, next_review_date=tomorrow)
+    item = SavedItem(
+        user_id=user_id,
+        content=content,
+        title=title,
+        topic=topic,
+        description=description,
+        next_review_date=tomorrow,
+    )
     db.add(item)
     db.commit()
     db.refresh(item)

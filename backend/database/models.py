@@ -36,6 +36,7 @@ class SavedItem(Base):
     content: Mapped[str]
     title: Mapped[str | None]
     topic: Mapped[str | None]
+    description: Mapped[str | None]
 
     # Open Graph data fetched from the URL itself. Kept separate from `title`
     # so enrichment can never overwrite what the sharing app or the user gave us.

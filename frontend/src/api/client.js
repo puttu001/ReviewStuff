@@ -65,8 +65,11 @@ export const api = {
 
   getMe: () => request('/me'),
 
-  save: ({ url, text, title, topic }) =>
-    request('/save', { method: 'POST', body: { url, text, title, topic } }),
+  save: ({ url, text, title, topic, description }) =>
+    request('/save', {
+      method: 'POST',
+      body: { url, text, title, topic, description },
+    }),
 
   getItems: (topic) =>
     request(`/items${topic ? `?topic=${encodeURIComponent(topic)}` : ''}`),

@@ -40,7 +40,7 @@ def save_link(
     current_user: User = Depends(get_current_user),
 ):
     content = extract_content(payload.url, payload.text)
-    item = save_item(db, user_id=current_user.id, content=content, title=payload.title, topic=payload.topic)
+    item = save_item(db, user_id=current_user.id, content=content, title=payload.title, topic=payload.topic, description=payload.description)
 
     # Link preview is fetched after the response is sent — the save must never
     # wait on a third-party site.

@@ -25,6 +25,7 @@ class SaveItemRequest(BaseModel):
     text: str | None = None
     title: str | None = None
     topic: str | None = None
+    description: str | None = None
 
 
 class SavedItemResponse(BaseModel):
@@ -34,6 +35,7 @@ class SavedItemResponse(BaseModel):
     content: str
     title: str | None
     topic: str | None
+    description: str | None
     fetched_title: str | None
     fetched_image: str | None
     fetched_site_name: str | None
